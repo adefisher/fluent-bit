@@ -652,7 +652,8 @@ int should_add_to_emf(struct flb_intermediate_metric *an_item)
 struct msgpack_object pack_emf_payload(struct flb_cloudwatch *ctx, 
                                        struct mk_list *flb_intermediate_metrics, 
                                        const char *input_plugin, 
-                                       struct flb_time tms)
+                                       struct flb_time tms,
+                                       struct msgpack_zone mempool;)
 {
     int total_items = mk_list_size(flb_intermediate_metrics) + 1;
 
@@ -763,7 +764,7 @@ struct msgpack_object pack_emf_payload(struct flb_cloudwatch *ctx,
      * Deserialize the buffer into msgpack_object instance.
      * Deserialized object is valid during the msgpack_zone instance alive. 
      */
-    msgpack_zone mempool;
+    
     msgpack_zone_init(&mempool, 2048);
 
     msgpack_object deserialized_emf_object;
@@ -806,6 +807,7 @@ int process_and_send(struct flb_cloudwatch *ctx, const char *input_plugin,
     /* Added for EMF support */
     struct flb_intermediate_metric *metric;
     struct mk_list flb_intermediate_metrics;
+    struct msgpack_zone mempool;
     struct mk_list *tmp;
     struct mk_list *head;
     struct flb_intermediate_metric *an_item;
@@ -914,7 +916,8 @@ int process_and_send(struct flb_cloudwatch *ctx, const char *input_plugin,
             struct msgpack_object emf_payload = pack_emf_payload(ctx, 
                                                                 &flb_intermediate_metrics, 
                                                                 input_plugin, 
-                                                                tms);
+                                                                tms,
+                                                                &mempool);
             
 
             ret = add_event(ctx, buf, stream, &emf_payload, &tms);
@@ -924,6 +927,7 @@ int process_and_send(struct flb_cloudwatch *ctx, const char *input_plugin,
                 an_item = mk_list_entry(head, struct flb_intermediate_metric, _head);
                 mk_list_del(&an_item->_head);
                 flb_free(an_item);
+            msgpack_zone_destroy(&mempool);
             }
         } else {
             ret = add_event(ctx, buf, stream, &map, &tms);
