@@ -918,6 +918,13 @@ int process_and_send(struct flb_cloudwatch *ctx, const char *input_plugin,
             
 
             ret = add_event(ctx, buf, stream, &emf_payload, &tms);
+
+            /* free the intermediate metric list */
+            mk_list_foreach_safe(head, tmp, &flb_intermediate_metrics) {
+                an_item = mk_list_entry(head, struct flb_intermediate_metric, _head);
+                mk_list_del(&an_item->_head);
+                flb_free(an_item);
+            }
         } else {
             ret = add_event(ctx, buf, stream, &map, &tms);
         }
@@ -932,15 +939,6 @@ int process_and_send(struct flb_cloudwatch *ctx, const char *input_plugin,
     /* send any remaining events */
     ret = send_log_events(ctx, buf, stream);
     reset_flush_buf(ctx, buf, stream);
-
-
-    /* free the intermediate metric list */
-            
-    mk_list_foreach_safe(head, tmp, &flb_intermediate_metrics) {
-        an_item = mk_list_entry(head, struct flb_intermediate_metric, _head);
-        mk_list_del(&an_item->_head);
-        flb_free(an_item);
-    }
 
     if (ret < 0) {
         return -1;
