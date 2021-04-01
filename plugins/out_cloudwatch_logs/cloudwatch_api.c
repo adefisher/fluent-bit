@@ -772,7 +772,7 @@ struct msgpack_object pack_emf_payload(struct flb_cloudwatch *ctx,
 
     /* free allocated memory */
     //msgpack_zone_destroy(&mempool);
-    msgpack_sbuffer_destroy(&mp_sbuf);
+    //msgpack_sbuffer_destroy(&mp_sbuf);
 
     return deserialized_emf_object;
 }
@@ -919,12 +919,12 @@ int process_and_send(struct flb_cloudwatch *ctx, const char *input_plugin,
 
             ret = add_event(ctx, buf, stream, &emf_payload, &tms);
 
-            // /* free the intermediate metric list */
-            // mk_list_foreach_safe(head, tmp, &flb_intermediate_metrics) {
-            //     an_item = mk_list_entry(head, struct flb_intermediate_metric, _head);
-            //     mk_list_del(&an_item->_head);
-            //     flb_free(an_item);
-            // }
+            /* free the intermediate metric list */
+            mk_list_foreach_safe(head, tmp, &flb_intermediate_metrics) {
+                an_item = mk_list_entry(head, struct flb_intermediate_metric, _head);
+                mk_list_del(&an_item->_head);
+                flb_free(an_item);
+            }
         } else {
             ret = add_event(ctx, buf, stream, &map, &tms);
         }
