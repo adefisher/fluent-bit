@@ -802,12 +802,13 @@ int process_and_send(struct flb_cloudwatch *ctx, const char *input_plugin,
     int check = FLB_FALSE;
     int found = FLB_FALSE;
     struct flb_time tms;
+    
+    /* Added for EMF support */
+    struct flb_intermediate_metric *metric;
+    struct mk_list flb_intermediate_metrics;
     struct mk_list *tmp;
     struct mk_list *head;
     struct flb_intermediate_metric *an_item;
-
-    /* Added for EMF support */
-    struct flb_intermediate_metric *metric;
 
     int intermediate_metric_type;
     char *intermediate_metric_unit;
@@ -885,7 +886,7 @@ int process_and_send(struct flb_cloudwatch *ctx, const char *input_plugin,
         if (strncmp(input_plugin, "cpu", 3) == 0 
             || strncmp(input_plugin, "mem", 3) == 0) {
             /* Added for EMF support: Construct a list */
-            struct mk_list flb_intermediate_metrics;
+            
             mk_list_init(&flb_intermediate_metrics);
 
             kv = map.via.map.ptr;
