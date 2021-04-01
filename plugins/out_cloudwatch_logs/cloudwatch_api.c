@@ -771,7 +771,7 @@ struct msgpack_object pack_emf_payload(struct flb_cloudwatch *ctx,
                    &deserialized_emf_object);
 
     /* free allocated memory */
-    msgpack_zone_destroy(&mempool);
+    //msgpack_zone_destroy(&mempool);
     msgpack_sbuffer_destroy(&mp_sbuf);
 
     return deserialized_emf_object;
